@@ -13,7 +13,7 @@ class Extract:
         self.ticker = ticker
         self.articles_per_day = articles_per_day
         self.end_date = dt.date.today()
-        self.start_date = self.end_date - timedelta(days=10)
+        self.start_date = self.end_date - timedelta(days=1000)
         self.client = client
 
     def extract_stock_data(self):
@@ -31,7 +31,6 @@ class Extract:
         try:
             news_data = self.client.get_news(tickers=[self.ticker],
                                              limit=self.articles_per_day * 10,
-
                                              sources=['Bloomberg.com', 'Reuters.com'],
                                              startDate=self.start_date,
                                              endDate=self.end_date)

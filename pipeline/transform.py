@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime as dt
 
 class transform:
     def __init__(self, stock_data_file_path, news_data_file_path):
@@ -9,10 +10,7 @@ class transform:
 
     def transform_stock_data(self):
 
-        headers = ['date', 'close', 'high', 'low', 'open', 'volume']
-        df = pd.read_csv(self.stock_data_file_path,
-                         skiprows=3,
-                         names=headers)
+        df = pd.read_csv(self.stock_data_file_path)
 
         lag_days = (1,5,10,30)
         # Lag Features
@@ -26,17 +24,35 @@ class transform:
         # Drops rows with NULL values in lagged columns to prevent performance reductions
         df = df.dropna()
 
+        # Transform timestamp string to date
+        df['date'] = pd.to_datetime(df['date'])
+
+        # Enrich with day name
+        df['day_name'] = df.apply(lambda x: x['date'].strftime("%A"), axis=1)
+
         return df
 
     def transform_news_data(self):
-        return pd.read_csv(self.news_data_file_path)
+        df = pd.read_csv(self.news_data_file_path)
+
+        # Convert timestamp columns to date
+        df['publishedDate'] = pd.to_datetime(df['publishedDate'], format='mixed')
+        df['crawlDate'] = pd.to_datetime(df['crawlDate'], format='mixed')
+
+        # Drop unnecessary columns
+        df = df.drop(['url', 'description'], axis=1)
+
+        # Enrich with day name
+        df['day_name'] = df.apply(lambda x: x['publishedDate'].strftime("%A"), axis=1)
+
+        # Standardise naming conventions
+        df = df.rename(columns={'publishedDate':'published_date', 'crawlDate':'crawl_date', })
+
+        return df
 
 
+transformed = transform("extracted_stock_data.csv", "extracted_news_data.csv")
 
+transformed.news_df.to_csv("transformed_news_data.csv", index=False)
 
-
-transformed = transform("extracted_stock_data.csv", "news_data.csv")
-
-# transformed.stock_df.to_csv("transformed_stock_data.csv", index=False)
-
-transformed.news_df.to_csv('transformed_news_data.csv')
+# transformed.stock_df.to_csv('transformed_stock_data.csv', index=False)

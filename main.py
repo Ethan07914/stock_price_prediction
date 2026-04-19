@@ -1,4 +1,5 @@
 import yfinance as yf
+import pandas as pd
 
 # Initialize the ticker
 ticker = yf.Ticker("GOOG")
@@ -6,4 +7,5 @@ ticker = yf.Ticker("GOOG")
 # Fetch recent news
 news = ticker.news
 
-print(news)
+news_df = pd.read_csv("pipeline/extracted_news_data.csv")
+print(news_df[news_df['description'].isnull()])
