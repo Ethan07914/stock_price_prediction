@@ -1,7 +1,7 @@
 from tiingo import TiingoClient
 from dotenv import load_dotenv
 from datetime import timedelta
-import yfinance as yf
+import pandas as pd
 import datetime as dt
 import os
 
@@ -9,20 +9,30 @@ import os
 load_dotenv()
 
 class Extract:
-    def __init__(self, ticker, client):
+    def __init__(self, ticker, client, articles_per_day):
         self.ticker = ticker
+        self.articles_per_day = articles_per_day
         self.end_date = dt.date.today()
-        self.start_date = self.end_date - timedelta(days=1000)
+        self.start_date = self.end_date - timedelta(days=10)
         self.client = client
 
     def extract_stock_data(self):
-        return yf.download(self.ticker,
-                           start=self.start_date,
-                           end=self.end_date)
+        try:
+            stock_data = self.client.get_ticker_price(self.ticker,
+                                                     frequency='daily',
+                                                     startDate=self.start_date,
+                                                     endDate=self.end_date)
+        except Exception as e:
+            raise RuntimeError(f"Data request failed for {self.ticker}") from e
+
+        return stock_data
 
     def extract_news_data(self):
         try:
             news_data = self.client.get_news(tickers=[self.ticker],
+                                             limit=self.articles_per_day * 10,
+
+                                             sources=['Bloomberg.com', 'Reuters.com'],
                                              startDate=self.start_date,
                                              endDate=self.end_date)
         except Exception as e:
@@ -50,9 +60,9 @@ def establish_tiingo_connection(api_token= \
 
     return client
 
-extract = Extract("GOOG", establish_tiingo_connection())
-# extract.extract_news_data().to_csv("data/news_data.csv")
-extract.extract_stock_data().to_csv("extracted_stock_data.csv")
+extract = Extract("META", establish_tiingo_connection(), 10)
+# pd.DataFrame(extract.extract_news_data()).to_csv('extracted_news_data.csv',index=False)
+pd.DataFrame(extract.extract_stock_data()).to_csv("extracted_stock_data.csv", index=False)
 
 
 

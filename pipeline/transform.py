@@ -1,14 +1,16 @@
 import pandas as pd
 
 class transform:
-    def __init__(self, extracted_file_path):
-        self.extracted_file_path = extracted_file_path
-        self.stock_df = self.transform_stock_df()
+    def __init__(self, stock_data_file_path, news_data_file_path):
+        self.stock_data_file_path =stock_data_file_path
+        self.stock_df = self.transform_stock_data()
+        self.news_data_file_path = news_data_file_path
+        self.news_df = self.transform_news_data()
 
-    def transform_stock_df(self):
+    def transform_stock_data(self):
 
         headers = ['date', 'close', 'high', 'low', 'open', 'volume']
-        df = pd.read_csv(self.extracted_file_path,
+        df = pd.read_csv(self.stock_data_file_path,
                          skiprows=3,
                          names=headers)
 
@@ -26,10 +28,15 @@ class transform:
 
         return df
 
+    def transform_news_data(self):
+        return pd.read_csv(self.news_data_file_path)
 
 
 
-transformed = transform("extracted_stock_data.csv")
 
-print(transformed.stock_df.head())
 
+transformed = transform("extracted_stock_data.csv", "news_data.csv")
+
+# transformed.stock_df.to_csv("transformed_stock_data.csv", index=False)
+
+transformed.news_df.to_csv('transformed_news_data.csv')
