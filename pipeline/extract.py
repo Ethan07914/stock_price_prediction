@@ -9,9 +9,8 @@ import os
 load_dotenv()
 
 class Extract:
-    def __init__(self, ticker, client, articles_per_day):
+    def __init__(self, ticker, client):
         self.ticker = ticker
-        self.articles_per_day = articles_per_day
         self.end_date = dt.date.today()
         self.start_date = self.end_date - timedelta(days=1000)
         self.client = client
@@ -30,8 +29,7 @@ class Extract:
     def extract_news_data(self):
         try:
             news_data = self.client.get_news(tickers=[self.ticker],
-                                             limit=self.articles_per_day * 10,
-                                             sources=['Bloomberg.com', 'Reuters.com'],
+                                             sortBy='publishedAt',
                                              startDate=self.start_date,
                                              endDate=self.end_date)
         except Exception as e:
@@ -59,9 +57,9 @@ def establish_tiingo_connection(api_token= \
 
     return client
 
-extract = Extract("META", establish_tiingo_connection(), 10)
-# pd.DataFrame(extract.extract_news_data()).to_csv('extracted_news_data.csv',index=False)
-pd.DataFrame(extract.extract_stock_data()).to_csv("extracted_stock_data.csv", index=False)
+extract = Extract("META", establish_tiingo_connection())
+pd.DataFrame(extract.extract_news_data()).to_csv('../data/extracted_news_data.csv',index=False)
+pd.DataFrame(extract.extract_stock_data()).to_csv("../data/extracted_stock_data.csv", index=False)
 
 
 

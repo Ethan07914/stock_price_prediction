@@ -25,7 +25,7 @@ class transform:
         df = df.dropna()
 
         # Transform timestamp string to date
-        df['date'] = pd.to_datetime(df['date'])
+        df['date'] = pd.to_datetime(df['date']).dt.date
 
         # Enrich with day name
         df['day_name'] = df.apply(lambda x: x['date'].strftime("%A"), axis=1)
@@ -36,8 +36,8 @@ class transform:
         df = pd.read_csv(self.news_data_file_path)
 
         # Convert timestamp columns to date
-        df['publishedDate'] = pd.to_datetime(df['publishedDate'], format='mixed')
-        df['crawlDate'] = pd.to_datetime(df['crawlDate'], format='mixed')
+        df['publishedDate'] = pd.to_datetime(df['publishedDate'], format='mixed').dt.date
+        df['crawlDate'] = pd.to_datetime(df['crawlDate'], format='mixed').dt.date
 
         # Drop unnecessary columns
         df = df.drop(['url', 'description'], axis=1)
@@ -46,13 +46,12 @@ class transform:
         df['day_name'] = df.apply(lambda x: x['publishedDate'].strftime("%A"), axis=1)
 
         # Standardise naming conventions
-        df = df.rename(columns={'publishedDate':'published_date', 'crawlDate':'crawl_date', })
+        df = df.rename(columns={'publishedDate':'published_date', 'crawlDate':'crawl_date'})
 
         return df
 
 
-transformed = transform("extracted_stock_data.csv", "extracted_news_data.csv")
+transformed = transform("../data/extracted_stock_data.csv", "../data/extracted_news_data.csv")
 
-transformed.news_df.to_csv("transformed_news_data.csv", index=False)
-
-# transformed.stock_df.to_csv('transformed_stock_data.csv', index=False)
+transformed.news_df.to_csv("../data/transformed_news_data.csv", index=False)
+transformed.stock_df.to_csv('../data/transformed_stock_data.csv', index=False)
