@@ -12,23 +12,40 @@ class transform:
 
         df = pd.read_csv(self.stock_data_file_path)
 
-        lag_days = (1,5,10,30)
+        # Transform timestamp string to date
+        df['date'] = pd.to_datetime(df['date']).dt.date
+
         # Lag Features
-        for day in lag_days:
-            df[f'{day}d_prior_close'] = df['close'].shift(day)
-            df[f'{day}d_prior_high'] = df['high'].shift(day)
-            df[f'{day}d_prior_low'] = df['low'].shift(day)
-            df[f'{day}d_prior_open'] = df['open'].shift(day)
-            df[f'{day}d_prior_volume'] = df['volume'].shift(day)
+        df['previous_day_close'] = df['close'].shift(1)
+        df[f'previous_day_high'] = df['high'].shift(1)
+        df[f'previous_day_low'] = df['low'].shift(1)
+        df[f'previous_day_open'] = df['open'].shift(1)
+        df[f'previous_day_volume'] = df['volume'].shift(1)
+
+
+        days = (5,10,30)
+        # Min and Max prices within time period
+        for day in days:
+            df[f'{day}_day_max'] = df.apply(lambda x: df.loc[(df['date'] > x['date'] - dt.timedelta(days=day)) *
+                                                             (df['date'] <= x['date'])]
+            ['high'].max(), axis=1)
+            df[f'{day}_day_min'] = df.apply(lambda x: df.loc[(df['date'] > x['date'] - dt.timedelta(days=day)) *
+                                                             (df['date'] <= x['date'])]
+            ['low'].min(), axis=1)
 
         # Drops rows with NULL values in lagged columns to prevent performance reductions
         df = df.dropna()
 
-        # Transform timestamp string to date
-        df['date'] = pd.to_datetime(df['date']).dt.date
+        weekday_dict = {'Monday': 1,
+                        'Tuesday': 2,
+                        'Wednesday': 3,
+                        'Thursday': 4,
+                        'Friday': 5,
+                        'Saturday': 6,
+                        'Sunday': 7}
 
-        # Enrich with day name
-        df['day_name'] = df.apply(lambda x: x['date'].strftime("%A"), axis=1)
+        lag_days = (5,10,30)
+        df['day_of_week'] = df.apply(lambda x: weekday_dict[x['date'].strftime("%A")], axis=1)
 
         return df
 

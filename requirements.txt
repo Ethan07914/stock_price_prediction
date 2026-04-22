@@ -3,9 +3,7 @@ seaborn
 pandas
 numpy
 
-yfinance
 tiingo
-financial-news-api
 
 transformers
 scikit-learn
