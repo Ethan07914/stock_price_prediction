@@ -1,6 +1,14 @@
 import pandas as pd
 import datetime as dt
 
+weekday_dict = {'Monday': 1,
+                'Tuesday': 2,
+                'Wednesday': 3,
+                'Thursday': 4,
+                'Friday': 5,
+                'Saturday': 6,
+                'Sunday': 7}
+
 class transform:
     def __init__(self, stock_data_file_path, news_data_file_path):
         self.stock_data_file_path =stock_data_file_path
@@ -36,15 +44,6 @@ class transform:
         # Drops rows with NULL values in lagged columns to prevent performance reductions
         df = df.dropna()
 
-        weekday_dict = {'Monday': 1,
-                        'Tuesday': 2,
-                        'Wednesday': 3,
-                        'Thursday': 4,
-                        'Friday': 5,
-                        'Saturday': 6,
-                        'Sunday': 7}
-
-        lag_days = (5,10,30)
         df['day_of_week'] = df.apply(lambda x: weekday_dict[x['date'].strftime("%A")], axis=1)
 
         return df
@@ -60,7 +59,7 @@ class transform:
         df = df.drop(['url', 'description'], axis=1)
 
         # Enrich with day name
-        df['day_name'] = df.apply(lambda x: x['publishedDate'].strftime("%A"), axis=1)
+        df['day_of_week'] = df.apply(lambda x: weekday_dict[x['publishedDate'].strftime("%A")], axis=1)
 
         # Standardise naming conventions
         df = df.rename(columns={'publishedDate':'published_date', 'crawlDate':'crawl_date'})
