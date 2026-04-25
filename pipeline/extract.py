@@ -1,14 +1,13 @@
 from tiingo import TiingoClient
 from dotenv import load_dotenv
 from datetime import timedelta
-import pandas as pd
 import datetime as dt
 import os
 
 
 load_dotenv()
 
-class Extract:
+class extract:
     def __init__(self, ticker, client):
         self.ticker = ticker
         self.end_date = dt.date.today()
@@ -57,9 +56,7 @@ def establish_tiingo_connection(api_token= \
 
     return client
 
-extract = Extract("META", establish_tiingo_connection())
-pd.DataFrame(extract.extract_news_data()).to_csv('../data/extracted_news_data.csv',index=False)
-pd.DataFrame(extract.extract_stock_data()).to_csv("../data/extracted_stock_data.csv", index=False)
+
 
 
 

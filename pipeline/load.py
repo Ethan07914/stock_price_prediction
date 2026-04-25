@@ -11,6 +11,5 @@ class load:
     def join(self):
         return pd.merge(self.stock_df, self.news_df, how='inner', on='date')
 
-load = load('../data/article_metrics.csv', '../data/transformed_stock_data.csv')
-load.combined_df.to_csv('../data/combined_output.csv', index=False)
+
 

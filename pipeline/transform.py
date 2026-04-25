@@ -67,7 +67,3 @@ class transform:
         return df
 
 
-transformed = transform("../data/extracted_stock_data.csv", "../data/extracted_news_data.csv")
-
-transformed.news_df.to_csv("../data/transformed_news_data.csv", index=False)
-transformed.stock_df.to_csv('../data/transformed_stock_data.csv', index=False)
