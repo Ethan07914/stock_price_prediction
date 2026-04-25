@@ -1,2 +1,4 @@
 .idea/
 .env
+pipeline/__pycache__/
+models/__pycache__/
