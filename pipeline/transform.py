@@ -21,7 +21,7 @@ class transform:
         df = pd.read_csv(self.stock_data_file_path)
 
         # Transform timestamp string to date
-        df['date'] = pd.to_datetime(df['date']).dt.date
+        df['date'] = pd.to_datetime(df['date'])
 
         # Lag Features
         df['previous_day_close'] = df['close'].shift(1)
@@ -44,7 +44,7 @@ class transform:
         # Drops rows with NULL values in lagged columns to prevent performance reductions
         df = df.dropna()
 
-        df['day_of_week'] = df.apply(lambda x: weekday_dict[x['date'].strftime("%A")], axis=1)
+        df['day_of_week'] = df['date'].dt.day_name().map(weekday_dict)
 
         return df
 

@@ -8,10 +8,11 @@ import os
 load_dotenv()
 
 class extract:
-    def __init__(self, ticker, client):
+    def __init__(self, ticker, client, article_limit, end_date, start_date):
         self.ticker = ticker
-        self.end_date = dt.date.today()
-        self.start_date = self.end_date - timedelta(days=1000)
+        self.end_date = end_date
+        self.start_date = start_date
+        self.article_limit = article_limit
         self.client = client
 
     def extract_stock_data(self):
@@ -28,7 +29,7 @@ class extract:
     def extract_news_data(self):
         try:
             news_data = self.client.get_news(tickers=[self.ticker],
-                                             sortBy='publishedAt',
+                                             limit=self.article_limit,
                                              startDate=self.start_date,
                                              endDate=self.end_date)
         except Exception as e:
