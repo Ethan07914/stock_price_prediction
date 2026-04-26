@@ -1,5 +1,4 @@
 import os
-
 import pandas as pd
 from pipeline.extract import establish_tiingo_connection, extract
 from pipeline.transform import transform
@@ -7,7 +6,7 @@ from pipeline.load import load
 import datetime as dt
 from ipynb.fs.defs.models.sentiment_model import run_text_classification, enrich_df, calculate_metrics
 
-def run_extract(ticker, start_date, end_date, article_limit):
+def run_extract_news(ticker, start_date, end_date, article_limit):
     print(
     '''
     STARTING ETL PIPELINE:
@@ -18,13 +17,25 @@ def run_extract(ticker, start_date, end_date, article_limit):
     # Initialised extract object
     extract_obj = extract(ticker, establish_tiingo_connection(), article_limit, end_date, start_date)
 
+    # GEMINI 3 FAST
+    # Prevents headers from being appended in the subsequent runs of the function
+    file_path = 'data/extracted_news_data.csv'
+    header_needed = not os.path.exists(file_path)
+
     extracted_news_df = pd.DataFrame(extract_obj.extract_news_data())
-    extracted_news_df.to_csv('data/extracted_news_data.csv', index=False, mode='a')
+    extracted_news_df.to_csv('data/extracted_news_data.csv', index=False, mode='a', header=header_needed)
+
+    return extracted_news_df
+
+def run_extract_stock(ticker, start_date, end_date, article_limit):
+    # EXTRACT
+    # Initialised extract object
+    extract_obj = extract(ticker, establish_tiingo_connection(), article_limit, end_date, start_date)
 
     extracted_stock_df = pd.DataFrame(extract_obj.extract_stock_data())
-    extracted_stock_df.to_csv("data/extracted_stock_data.csv", index=False, mode='a')
+    extracted_stock_df.to_csv("data/extracted_stock_data.csv", index=False)
 
-    return extracted_news_df, extracted_stock_df
+    return extracted_stock_df
 
 def  run_transform():
     print('''
@@ -35,10 +46,10 @@ def  run_transform():
                               "data/extracted_news_data.csv")
 
     transformed_news_df = transform_obj.news_df
-    transformed_news_df.to_csv("data/transformed_news_data.csv", index=False, mode='a')
+    transformed_news_df.to_csv("data/transformed_news_data.csv", index=False)
 
     transformed_stock_df = transform_obj.stock_df
-    transformed_stock_df.to_csv('data/transformed_stock_data.csv', index=False, mode='a')
+    transformed_stock_df.to_csv('data/transformed_stock_data.csv', index=False)
 
     print('''
     TEXT-CLASSIFICATION''')
@@ -51,7 +62,7 @@ def  run_transform():
 
     # Calculate metrics & output as CSV
     news_df_with_metrics = calculate_metrics(enriched_news_df)
-    news_df_with_metrics.to_csv('data/news_df_with_metrics.csv', index=False, mode='a')
+    news_df_with_metrics.to_csv('data/news_df_with_metrics.csv', index=False)
 
     return news_df_with_metrics, transformed_stock_df
 
@@ -61,17 +72,12 @@ def run_load():
     # LOAD:
     # Initialise load object
     load_obj = load('data/news_df_with_metrics.csv', 'data/transformed_stock_data.csv')
-    load_obj.combined_df.to_csv('data/combined_output.csv', index=False, mode='a')
+    load_obj.combined_df.to_csv('data/combined_output.csv', index=False)
 
     print('''
     END''')
 
     return load_obj.combined_df
-
-def initial_load():
-    end_date = dt.date.today()
-    start_date = end_date - dt.timedelta(days=1000)
-    article_limit = 1000
 
 def overwrite_files():
     files = ['combined_output.csv', 'news_df_with_metrics.csv', 'transformed_news_data.csv',
@@ -85,6 +91,12 @@ def overwrite_files():
 if __name__ == '__main__':
     overwrite_files()
     ticker = 'META'
-    run_extract(ticker, dt.date.today() - dt.timedelta(days=2), dt.date.today(), 10)
+
+    run_extract_news(ticker, dt.date.today() - dt.timedelta(days=50), dt.date.today() - dt.timedelta(days=3), 10)
+    extracted_news_df = pd.read_csv('data/extracted_news_data.csv')
+    start_date = pd.to_datetime(extracted_news_df['publishedDate'], format='mixed').dt.date.min()
+    end_date = pd.to_datetime(extracted_news_df['publishedDate'], format='mixed').dt.date.max()
+    run_extract_stock(ticker, start_date, end_date, None)
+
     run_transform()
     run_load()
