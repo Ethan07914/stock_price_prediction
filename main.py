@@ -23,6 +23,10 @@ def run_extract_news(ticker, start_date, end_date, article_limit):
     header_needed = not os.path.exists(file_path)
 
     extracted_news_df = pd.DataFrame(extract_obj.extract_news_data())
+
+    extracted_news_df['tags'] = extracted_news_df['tags'].apply(tuple)
+    extracted_news_df['tickers'] = extracted_news_df['tickers'].apply(tuple)
+
     extracted_news_df.to_csv('data/extracted_news_data.csv', index=False, mode='a', header=header_needed)
 
     return extracted_news_df

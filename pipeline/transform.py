@@ -20,8 +20,15 @@ class transform:
 
         df = pd.read_csv(self.stock_data_file_path)
 
+        # START CHANGE - claude-sonnet-4-6
         # Transform timestamp string to date
-        df['date'] = pd.to_datetime(df['date'])
+        # WHY: Tiingo returns dates as timezone-aware datetimes (e.g. "2026-01-16 00:00:00+00:00").
+        # dt.tz_convert(None) strips the timezone to keep a tz-naive pandas Timestamp so that
+        # the .dt accessor (used below for day_name) keeps working. The final strftime formats
+        # the date as plain "YYYY-MM-DD" to match the news data, allowing the inner join in
+        # load.py to produce rows instead of an empty combined_output.csv.
+        df['date'] = pd.to_datetime(df['date'], utc=True).dt.tz_convert(None)
+        # END CHANGE - claude-sonnet-4-6
 
         # Lag Features
         df['previous_day_close'] = df['close'].shift(1)
@@ -45,6 +52,10 @@ class transform:
         df = df.dropna()
 
         df['day_of_week'] = df['date'].dt.day_name().map(weekday_dict)
+
+        # START CHANGE - claude-sonnet-4-6
+        df['date'] = df['date'].dt.strftime('%Y-%m-%d')
+        # END CHANGE - claude-sonnet-4-6
 
         return df
 
