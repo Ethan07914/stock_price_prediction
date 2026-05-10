@@ -41,22 +41,27 @@ def run_extract_stock(ticker, start_date, end_date, article_limit):
 
     return extracted_stock_df
 
-def  run_transform():
+def run_transform_stock():
     print('''
     TRANSFORM''')
     # TRANSFORM:
     # Initialise transform object
-    transform_obj = transform("data/extracted_stock_data.csv",
-                              "data/extracted_news_data.csv")
+    transform_obj = transform(stock_data_file_path="data/extracted_stock_data.csv")
 
-    transformed_news_df = transform_obj.news_df
-    transformed_news_df.to_csv("data/transformed_news_data.csv", index=False)
 
     transformed_stock_df = transform_obj.stock_df
     transformed_stock_df.to_csv('data/transformed_stock_data.csv', index=False)
 
+    return transformed_stock_df
+
+def run_transform_news():
+    transform_obj = transform(news_data_file_path="data/extracted_news_data.csv")
+
+    transformed_news_df = transform_obj.news_df
+    transformed_news_df.to_csv("data/transformed_news_data.csv", index=False)
+
     print('''
-    TEXT-CLASSIFICATION''')
+        TEXT-CLASSIFICATION''')
     # TEXT-CLASSIFICATION:
     # Get Sentiment Classifications
     news_df_with_classifications = run_text_classification(transformed_news_df)
@@ -68,7 +73,9 @@ def  run_transform():
     news_df_with_metrics = calculate_metrics(enriched_news_df)
     news_df_with_metrics.to_csv('data/news_df_with_metrics.csv', index=False)
 
-    return news_df_with_metrics, transformed_stock_df
+    return news_df_with_metrics
+
+
 
 def run_load():
     print('''
@@ -102,5 +109,6 @@ if __name__ == '__main__':
     end_date = pd.to_datetime(extracted_news_df['publishedDate'], format='mixed').dt.date.max()
     run_extract_stock(ticker, start_date, end_date, None)
 
-    run_transform()
+    run_transform_stock()
+    run_transform_news()
     run_load()

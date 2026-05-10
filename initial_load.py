@@ -1,4 +1,4 @@
-from main import overwrite_files, run_extract_stock, run_extract_news, run_transform, run_load
+from main import overwrite_files, run_extract_stock, run_extract_news, run_transform_news, run_transform_stock, run_load
 import datetime as dt
 import pandas as pd
 
@@ -32,5 +32,6 @@ start_date = pd.to_datetime(extracted_news_df['publishedDate']).dt.date.min()
 end_date = pd.to_datetime(extracted_news_df['publishedDate']).dt.date.max()
 
 run_extract_stock(ticker, start_date, end_date, article_limit)
-run_transform()
+run_transform_news()
+run_transform_stock()
 run_load()
