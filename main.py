@@ -68,6 +68,7 @@ def run_transform_news():
 
     # Enrich with additional columns
     enriched_news_df = enrich_df(news_df_with_classifications)
+    enriched_news_df.to_csv("data/enriched_news_data.csv", index=False)
 
     # Calculate metrics & output as CSV
     news_df_with_metrics = calculate_metrics(enriched_news_df)
