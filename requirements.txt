@@ -2,6 +2,7 @@ matplotlib
 seaborn
 pandas
 numpy
+streamlit
 
 tiingo
 

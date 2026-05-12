@@ -86,7 +86,7 @@ def run_load():
     load_obj.combined_df.to_csv('data/combined_output.csv', index=False, mode='a')
 
     df = pd.read_csv('data/combined_output.csv')
-    deduplicated_df = df.drop_duplicates(keep='first')
+    deduplicated_df = df.drop_duplicates(keep='first', subset=['date'])
     deduplicated_df.to_csv('data/combined_output.csv', index=False)
 
     print('''
