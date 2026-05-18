@@ -81,7 +81,7 @@ with tab1:
 with tab2:
     with st.container(border=True):
         st.write("### Important Notice")
-        st.write("- The predictions should not be used in isolation to guide decision making.")
+        st.write("- Predictions should not be used in isolation to guide decision making.")
         st.write("- The intention would be to run the predictions in the morning.")
         st.write("- The model predicts the close price of the stock the same day.")
 
