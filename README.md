@@ -6,11 +6,11 @@ In this project I used numerical data such as stock prices and trading volume al
 
 ## Intended Users
 
-Any adult interested in the stock market and investments with awareness of the potential risks.
+Anyone interested in the stock market and investments with awareness of the potential risks.
 
 ## Success Metrics
 
-To measure the success I took an average of how close my models predicted close prices were to the actual close prices of a stock on a particular day. The exact metric I used was RMSE (root mean squared error). RMSE takes the mean/average of the square root of each error and then raises the squares the result.
+To measure the success I took an average of how close my models predicted close prices were to the actual close prices of a stock on a particular day. The exact metric I used was RMSE (root mean squared error). RMSE squares the differences before averaging them and calculating the square root.
 
 ## How To Run
 
@@ -32,8 +32,8 @@ hugging_face_token=<insert token>
 
 ## Results
 
-- **INSERT PREDICTED VS ACTUAL IMAGE**
-- **INSERT MOST RECENT RMSE SCORES ON TRAIN AND TEST SET**
+-![img.png](img.png) 
+- **{'train_rmse': 11.275712966918945, 'test_rmse': 15.504542350769043}**
 
 ## Limitations And Known Issues
 
@@ -55,4 +55,4 @@ The following videos and courses taught me about LSTMs and the standard way of b
 - (Neural Nine, YouTube, 2025, Stock Price Prediction in Python with PyTorch - Full Tutorial, https://www.youtube.com/watch?v=IJ50ew8wi-0)
 - (Jasmin Ludolf & Thomas Hossler, DataCamp, 2026, Introduction to Deep Learning with PyTorch, https://app.datacamp.com/learn/courses/introduction-to-deep-learning-with-pytorch)
 - (Michal Oleszak, DataCamp, 2025, Intermediate Deep Learning with PyTorch, https://app.datacamp.com/learn/courses/intermediate-deep-learning-with-pytorch)
-
+- (3Blue1Brown, YouTube, 2018, Neural Networks Playlist, https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)
