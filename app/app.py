@@ -14,7 +14,7 @@ def load_stock_data(URL):
     try:
         response = requests.get(URL+"/stock_data")
         if response.status_code == 200:
-            data = json.loads(response.json())
+            data = response.json()
             return pd.DataFrame(data)
         else:
             st.error("Error fetching stock data")
@@ -28,7 +28,7 @@ def load_news_data(URL):
     try:
         response = requests.get(URL+"/news_data")
         if response.status_code == 200:
-            data = json.loads(response.json())
+            data = response.json()
             return pd.DataFrame(data)
         else:
             st.error("Error fetching news data")
@@ -54,7 +54,7 @@ def load_predicted_vs_actual_data(URL):
     try:
         response = requests.get(URL + "/predictions_vs_actual")
         if response.status_code == 200:
-            data = json.loads(response.json())
+            data = response.json()
             return pd.DataFrame(data)
         else:
             st.error("Error fetching predicted vs actual data")
