@@ -5,6 +5,7 @@ import requests
 
 URL = "https://stock-price-prediction-wlor.onrender.com"
 
+
 # 1.DATAFRAMES
 @st.cache_data(ttl=60)
 def load_stock_data(URL):
@@ -13,7 +14,7 @@ def load_stock_data(URL):
         response = requests.get(URL+"/stock_data")
         if response.status_code == 200:
             data = response.json()
-            return pd.read_json(data)
+            return pd.DataFrame(data)
         else:
             st.error("Error fetching stock data")
             return None
@@ -27,7 +28,7 @@ def load_news_data(URL):
         response = requests.get(URL+"/news_data")
         if response.status_code == 200:
             data = response.json()
-            return pd.read_json(data)
+            return pd.DataFrame(data)
         else:
             st.error("Error fetching news data")
             return None
@@ -53,7 +54,7 @@ def load_predicted_vs_actual_data(URL):
         response = requests.get(URL + "/predictions_vs_actual")
         if response.status_code == 200:
             data = response.json()
-            return pd.read_json(data)
+            return pd.DataFrame(data)
         else:
             st.error("Error fetching predicted vs actual data")
             return None
