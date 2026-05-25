@@ -16,7 +16,7 @@ def load_stock_data():
     # Written with assistance of GEMINI 3, PROMPT: How do I call my API in my streamlit front end
     try:
         data = get_stock_data()
-        return pd.DataFrame(data)
+        return pd.read_json(data)
     except Exception as e:
         st.error(f"Could not connect to API: {e}")
 
@@ -25,7 +25,7 @@ def load_news_data():
     # Written with assistance of GEMINI 3, PROMPT: How do I call my API in my streamlit front end
     try:
         data = get_news_data()
-        return pd.DataFrame(data)
+        return pd.read_json(data)
     except Exception as e:
         st.error(f"Could not connect to API: {e}")
 
@@ -41,7 +41,7 @@ def trigger_pipeline():
 def load_predicted_vs_actual_data():
     try:
         data = get_predictions_vs_actual()
-        return pd.DataFrame(data)
+        return pd.read_json(data)
     except Exception as e:
         st.error(f"Could not connect to API: {e}")
 
