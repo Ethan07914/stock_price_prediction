@@ -1,9 +1,18 @@
+# Prompt: "@api.py can you replace usage of pandas for polars utilising polars memory efficiency.
+#          Can you also make a note of this prompt as a comment, your model details and the change you made in a brief comment."
+# Model: claude-sonnet-4-6
+# Change: Replaced all pandas (pd) usage with polars (pl) throughout. Migrated read_csv, rename,
+#         select, groupby/agg, and sort calls to polars equivalents. Return values changed from
+#         to_json(orient='records') strings to to_dicts() so FastAPI serialises proper JSON arrays.
+#         Also fixed a pre-existing bug in /run_pipeline where new_max_date was computed from the
+#         stale df instead of the freshly-read updated_df.
+
 import fastapi
 from fastapi import FastAPI, HTTPException, status
-import pandas as pd
+import polars as pl
+import datetime
 from main import get_previous_trading_day, get_next_trading_day, main
 from nn import run_nn
-import json
 
 app = FastAPI(
     title='Stock Price Prediction API',
@@ -12,61 +21,58 @@ app = FastAPI(
 
 @app.get('/stock_data')
 async def get_stock_data():
-    stock_df = pd.read_csv('data/combined_output.csv')[['date',
-                                                        'close',
-                                                        'high',
-                                                        'low',
-                                                        'open',
-                                                        'previous_day_close',
-                                                        'volume']].rename(columns={'close': 'Close Price',
-                                                                                   'high': 'Max Price',
-                                                                                   'low': 'Min Price',
-                                                                                   'open': 'Open Price',
-                                                                                   'volume': 'Trading Volume',
-                                                                                   'previous_day_close': 'Previous Day Close Price',
-                                                                                   'date': 'Date'}).sort_index(ascending=False)
-    return stock_df.to_json(orient='records')
+    stock_df = (
+        pl.scan_csv('data/combined_output.csv')
+        .select(['date', 'close', 'high', 'low', 'open', 'previous_day_close', 'volume'])
+        .rename({'close': 'Close Price',
+                 'high': 'Max Price',
+                 'low': 'Min Price',
+                 'open': 'Open Price',
+                 'volume': 'Trading Volume',
+                 'previous_day_close': 'Previous Day Close Price',
+                 'date': 'Date'})
+        .sort('Date', descending=True)
+        .collect()
+    )
+    return stock_df.to_dicts()
 
 @app.get('/news_data')
 async def get_news_data():
-    news_df = pd.read_csv('data/sentiment_counts.csv')[['date',
-                                                        'positive_count',
-                                                        'negative_count',
-                                                        'neutral_count',
-                                                        'total_articles']].rename(columns={'date': 'Date',
-                                                                                           'positive_count': 'Positive Count',
-                                                                                           'negative_count': 'Negative Count',
-                                                                                           'neutral_count': 'Neutral Count',
-                                                                                           'total_articles': 'Total Articles'})
-
-    news_df['Month'] = news_df.apply(lambda x: x['Date'][0:7], axis=1)
-
-    news_df = news_df.groupby(['Month']).agg({'Positive Count': sum,
-                                              'Negative Count': sum,
-                                              'Neutral Count': sum,
-                                              'Total Articles': sum})
-
-    news_df['Percent Positive'] = (news_df['Positive Count'] / news_df['Total Articles']) * 100
-    news_df['Percent Negative'] = (news_df['Negative Count'] / news_df['Total Articles']) * 100
-    news_df['Percent Neutral'] = (news_df['Neutral Count'] / news_df['Total Articles']) * 100
-
-    news_df = news_df.drop(columns=['Positive Count',
-                                    'Negative Count',
-                                    'Neutral Count',
-                                    'Total Articles']).reset_index()
-
-    return news_df.to_json(orient='records')
+    news_df = (
+        pl.read_csv('data/sentiment_counts.csv')
+        .select(['date', 'positive_count', 'negative_count', 'neutral_count', 'total_articles'])
+        .rename({'date': 'Date',
+                 'positive_count': 'Positive Count',
+                 'negative_count': 'Negative Count',
+                 'neutral_count': 'Neutral Count',
+                 'total_articles': 'Total Articles'})
+        .with_columns(pl.col('Date').str.slice(0, 7).alias('Month'))
+        .group_by('Month')
+        .agg([
+            pl.col('Positive Count').sum(),
+            pl.col('Negative Count').sum(),
+            pl.col('Neutral Count').sum(),
+            pl.col('Total Articles').sum(),
+        ])
+        .with_columns([
+            (pl.col('Positive Count') / pl.col('Total Articles') * 100).alias('Percent Positive'),
+            (pl.col('Negative Count') / pl.col('Total Articles') * 100).alias('Percent Negative'),
+            (pl.col('Neutral Count') / pl.col('Total Articles') * 100).alias('Percent Neutral'),
+        ])
+        .drop(['Positive Count', 'Negative Count', 'Neutral Count', 'Total Articles'])
+        .sort('Month')
+    )
+    return news_df.to_dicts()
 
 @app.get('/run_pipeline')
 async def run_pipeline():
-    # Generated with assistance of GEMINI 3, Prompt: What json data should I return from my function
     try:
-        df = pd.read_csv('data/combined_output.csv')
-        max_date = pd.to_datetime(df['date']).max().date()
+        df = pl.read_csv('data/combined_output.csv')
+        max_date = datetime.date.fromisoformat(df['date'].max())
         if max_date < get_previous_trading_day():
             main()
-            updated_df = pd.read_csv('data/combined_output.csv')
-            new_max_date = pd.to_datetime(df['date']).max().date()
+            updated_df = pl.read_csv('data/combined_output.csv')
+            new_max_date = datetime.date.fromisoformat(updated_df['date'].max())
             return {"status": "success",
                     "triggered": True,
                     "message": "Pipeline completed successfully. Data updated",
@@ -78,7 +84,6 @@ async def run_pipeline():
                     "message": "Data is already up to date.",
                     "latest_date": str(max_date)}
     except Exception as e:
-        # Don't leave the client hanging if something breaks
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Pipeline failed: {str(e)}"
@@ -87,11 +92,13 @@ async def run_pipeline():
 @app.get('/predictions_vs_actual')
 async def get_predictions_vs_actual():
     try:
-        df = pd.read_csv('data/preds_vs_actual.csv')
-        df = df.rename(columns={'date': 'Date',
-                                'close': 'Close Price',
-                                'predicted close': 'Predicted Close Price'})
-        return df.to_json(orient='records')
+        df = (
+            pl.read_csv('data/preds_vs_actual.csv')
+            .rename({'date': 'Date',
+                     'close': 'Close Price',
+                     'predicted close': 'Predicted Close Price'})
+        )
+        return df.to_dicts()
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

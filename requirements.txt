@@ -1,6 +1,7 @@
 matplotlib
 seaborn
 pandas
+polars
 numpy
 streamlit
 fastapi
