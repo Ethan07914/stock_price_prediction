@@ -7,6 +7,10 @@ on:
       - main
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
 
+  # Cron schedule:
+  schedule:
+    - cron: '5 4 * * *'
+
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
