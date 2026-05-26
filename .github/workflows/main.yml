@@ -37,7 +37,7 @@ jobs:
     # Temporary .env file
     - name: Create .env file
       run: |
-        echo "tiingo_api_token=${{ tiingo_api_token }}" >> .env
+        echo "tiingo_api_token=${{ secrets.tiingo_api_token }}" >> .env
         echo "hugging_face_token=${{ secrets.hugging_face_token }}" >> .env
 
     # 4. Run the main.py file
