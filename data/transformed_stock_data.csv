@@ -1,2 +1,2 @@
 date,close,high,low,open,volume,adjClose,adjHigh,adjLow,adjOpen,adjVolume,divCash,splitFactor,previous_day_close,previous_day_high,previous_day_low,previous_day_open,previous_day_volume,day_of_week
-2026-06-15,593.48,601.27,579.2975,579.9,17653258,593.48,601.27,579.2975,579.9,17653258,0.525,1.0,566.98,576.07,560.9,572.95,14347769.0,1
+2026-06-16,600.21,605.81,592.0,593.65,11344421,600.21,605.81,592.0,593.65,11344421,0.0,1.0,593.48,601.27,579.2975,579.9,17653258.0,2
